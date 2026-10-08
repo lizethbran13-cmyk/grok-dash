@@ -364,6 +364,7 @@ function livePlayers() {
 }
 G.livePlayers = livePlayers;
 function onEv(p, e) {
+  if (p === me) { const c = GS.evc = GS.evc || {}; c[e] = (c[e] || 0) + 1; }
   Snd.fx(e === 'land' ? 'land' : e === 'walljump' ? 'walljump' : e);
   if (e === 'spring') { const s = R.ctx.springs.find((q) => q.anim > 0.3); if (s) s.anim = 0.4; V.burst(p.x, p.y, '#ffffff', 6, 5, 0.5, 0.3); }
   if (e === 'boost' || e === 'dash' || e === 'spindash') V.burst(p.x - p.face, p.y + 0.6, '#7df9ff', 8, 5, 0.6, 0.35);
@@ -579,6 +580,7 @@ const p_wd = () => me.wallDir;
 window.__gd = {
   G, GS, GD, V, save: () => save, R: () => R, me: () => me, inp,
   start(id, o) { G.loadLevel(id, o); },
+  auto(on, god) { GS.bot = on ? botInput : null; GS.botGod = !!on && god !== false; GS.botS = null; },
   tp(x, y) { if (me) { me.x = x; me.y = y; me.vx = 0; me.vy = 0; me.gs = null; } },
   // run a level headlessly with the autopilot; returns {ok, t, x, deaths}
   sim(id, maxT, god, tr) {
