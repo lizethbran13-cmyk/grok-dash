@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#7c4dff" />
+  <title>GROK DASH</title>
+  <link rel="stylesheet" href="style.css?v=1" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%237c4dff'/%3E%3Cpath d='M36 6 14 36h14l-4 22 26-32H36z' fill='%23ffd23f' stroke='%23fff' stroke-width='3'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div id="tags"></div>
+
+  <div id="hud" class="hidden">
+    <div id="hudL">
+      <div class="pill" id="pRings"><i class="ringI"></i><b id="nRings">0</b></div>
+      <div class="pill" id="pSparks"><i class="sparkI">&#10022;</i><b id="nSparks">0</b><small id="nSparksT"></small></div>
+      <div class="pill" id="pCages"></div>
+    </div>
+    <div id="hudR">
+      <div class="pill" id="pTime">0:00.0</div>
+      <div class="pill" id="pLives">&#10084;&#65039; <b id="nLives">5</b></div>
+      <button id="bMute" class="rbtn" type="button" aria-label="Sound">&#128266;</button>
+      <button id="bPause" class="rbtn" type="button" aria-label="Pause">&#10074;&#10074;</button>
+    </div>
+    <div id="roomPill" class="pill hidden"></div>
+    <div id="hint" class="hidden"></div>
+    <div id="bossBar" class="hidden"><span id="bossName"></span><div><b id="bossHp"></b></div></div>
+    <div id="chaseWarn" class="hidden"></div>
+    <div id="raceBoard" class="hidden"></div>
+    <div id="joyzone"><div id="joybase"><div id="joyknob"></div></div><div id="joyhint">&#9664; MOVE &#9654;<br><small>&#9660; + DASH = spin-dash</small></div></div>
+    <button id="bDash" class="cbtn" type="button">DASH</button>
+    <button id="bAtk" class="cbtn" type="button">&#128074;</button>
+    <button id="bJump" class="cbtn big" type="button">JUMP</button>
+    <div id="kbdhelp">&larr;&rarr; run &middot; &darr; crouch &middot; Space jump (hold = glide) &middot; X attack &middot; Shift dash &middot; &darr;+Shift spin-dash &middot; P pause</div>
+  </div>
+  <div id="rotHint" class="hidden">&#128260; Turn your phone sideways for the best view! <button id="rotX" type="button">OK</button></div>
+  <div id="toasts"></div>
+  <div id="banner" class="hidden"></div>
+
+  <div id="scrTitle" class="screen">
+    <div class="card title">
+      <div class="logo"><span class="lg1">GROK</span><span class="lg2">DASH</span></div>
+      <div class="tagline">&#9889; Run fast &middot; jump high &middot; rescue critters! &#9889;</div>
+      <div class="row prof">
+        <input id="nameIn" maxlength="12" placeholder="Your name" autocomplete="off" />
+        <div id="colorRow" class="swatches"></div>
+      </div>
+      <div class="btncol">
+        <button id="bPlay" class="btn primary" type="button">PLAY</button>
+        <button id="bOnline" class="btn blue" type="button">PLAY WITH FRIENDS</button>
+        <div class="btnrow tight">
+          <button id="bHeroes" class="btn green small" type="button">HEROES</button>
+          <button id="bUnlocks" class="btn alt small" type="button">UNLOCKS</button>
+        </div>
+        <label class="toggle"><input type="checkbox" id="assistT" /> <span>Assist mode: extra hit + safety bubble over pits</span></label>
+      </div>
+      <a id="arcadeLink" class="foot link" href="https://lizethbran13-cmyk.github.io/grok-arcade/">&larr; Grok Arcade</a>
+    </div>
+  </div>
+
+  <div id="scrHero" class="screen hidden">
+    <div class="card wide">
+      <h2>PICK YOUR HERO</h2>
+      <div id="heroList"></div>
+      <h3>SKINS</h3>
+      <div id="skinList"></div>
+      <button id="bHeroDone" class="btn primary" type="button">DONE</button>
+    </div>
+  </div>
+
+  <div id="scrUnlocks" class="screen hidden">
+    <div class="card wide">
+      <h2>UNLOCKS</h2>
+      <div id="unlockList"></div>
+      <button id="bUnlDone" class="btn primary" type="button">BACK</button>
+    </div>
+  </div>
+
+  <div id="scrMap" class="screen hidden mapscr">
+    <div class="card wide map">
+      <div class="maptop"><button id="bMapBack" class="btn alt small" type="button">&larr;</button><h2 id="mapTitle">WORLD MAP</h2><button id="bMapHero" class="btn green small" type="button">HERO</button></div>
+      <div id="worldTabs"></div>
+      <div id="worldBox"></div>
+      <div id="mapWait" class="hidden"></div>
+    </div>
+  </div>
+
+  <div id="scrLevel" class="screen hidden top">
+    <div class="card" id="levelCard"></div>
+  </div>
+
+  <div id="scrOnline" class="screen hidden">
+    <div class="card">
+      <h2>PLAY WITH FRIENDS</h2>
+      <p class="sub">2&ndash;3 players, each on their own phone. Play levels together (or race!) &mdash; everyone keeps their own save.</p>
+      <button id="bHost" class="btn primary" type="button">HOST A ROOM</button>
+      <div class="or">or join a friend&rsquo;s room</div>
+      <div class="row join">
+        <input id="codeIn" maxlength="5" placeholder="CODE" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+        <button id="bJoin" class="btn blue" type="button">JOIN</button>
+      </div>
+      <div id="onlineMsg" class="msg"></div>
+      <button id="bOnlineBack" class="btn alt small" type="button">BACK</button>
+    </div>
+  </div>
+
+  <div id="scrPause" class="screen hidden top">
+    <div class="card">
+      <h2>PAUSED</h2>
+      <div class="btncol">
+        <button id="bResume" class="btn primary" type="button">RESUME</button>
+        <button id="bRestartCp" class="btn blue" type="button">BACK TO CHECKPOINT</button>
+        <button id="bRestartLv" class="btn alt" type="button">RESTART LEVEL</button>
+        <button id="bQuitMap" class="btn red" type="button">QUIT TO MAP</button>
+        <label class="toggle"><input type="checkbox" id="assistT2" /> <span>Assist mode</span></label>
+      </div>
+    </div>
+  </div>
+
+  <div id="scrResult" class="screen hidden top">
+    <div class="card" id="resultCard"></div>
+  </div>
+  <div id="fade"></div>
+
+  <script src="three.min.js"></script>
+  <script src="peerjs.min.js"></script>
+  <script src="grok-net.js"></script>
+  <script src="js/data.js?v=1"></script>
+  <script src="js/levelgen.js?v=1"></script>
+  <script src="js/player.js?v=1"></script>
+  <script src="js/models.js?v=1"></script>
+  <script src="js/scene.js?v=1"></script>
+  <script src="js/audio.js?v=1"></script>
+  <script src="js/boss.js?v=1"></script>
+  <script src="js/game.js?v=1"></script>
+  <script src="js/net.js?v=1"></script>
+  <script src="js/ui.js?v=1"></script>
+  <script>GD.G.boot();</script>
+</body>
+</html>
