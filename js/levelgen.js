@@ -40,7 +40,7 @@ C.gaps = (b) => {
     let dy = (b.r() - 0.45) * 2.6; if (b.y + dy < -14) dy = Math.abs(dy);
     b.arc('spk', b.x, b.y + 1, b.x + g, b.y + dy + 1, 2.4, 3);
     b.x += g; b.y += dy;
-    const w = Math.round(b.R(4, 6.5) - b.d);
+    const w = Math.round(b.R(6.5, 9) - b.d * 1.5);
     if (b.d > 0.25 && b.r() < 0.3) b.foe('flyer', b.x + w / 2, b.y + 3.6, 1.5);
     b.seg(w);
   }
@@ -73,20 +73,21 @@ C.spring = (b) => {
   const h = b.R(4.6, 6.4);
   b.o('spring', { x: b.x - 2.6, y: b.y, v: Math.sqrt(2 * G * (h + 2.8)) });
   b.line('spk', b.x - 2.6, b.y + 2.5, b.x - 2.6, b.y + h + 1.5, 4);
-  b.y += h; b.seg(8);
+  b.y += h; b.seg(14);
 };
 C.stairs = (b) => {
-  const n = 3 + (b.d > 0.35 ? 1 : 0), pit = b.d > 0.3;
+  const n = 3 + (b.d > 0.35 ? 1 : 0);
   b.seg(3);
   const x0 = b.x, y0 = b.y;
   for (let i = 0; i < n; i++) {
     const px = x0 + 2 + i * 4.6, py = y0 + 2.2 * (i + 1);
-    b.plat(px, px + 3.4, py, { ow: true, k: i === 1 && b.d > 0.45 ? 'crumble' : 'p' });
+    b.plat(px, px + (i === n - 1 ? 4.6 : 3.4), py, { ow: true });
     b.spk(px + 1.7, py + 1.2);
   }
   const xe = x0 + 2 + n * 4.6;
-  if (pit) { b.x = x0; b.seg(2); b.x = xe; } else { b.x = x0; b.seg(xe - x0); }
-  b.y = y0 + 2.2 * n; b.x = xe; b.seg(9);
+  b.seg(xe - x0);
+  b.o('spring', { x: xe - 1.3, y: y0, v: Math.sqrt(2 * G * (2.2 * n + 2.8)) });
+  b.y = y0 + 2.2 * n; b.seg(9);
 };
 C.hooks = (b) => {
   const n = 2 + (b.d > 0.3 ? 1 : 0);
@@ -104,9 +105,9 @@ C.walls = (b) => {
   b.seg(2.9); b.y += H; b.seg(9);
 };
 C.glide = (b) => {
-  b.seg(4);
-  const W = Math.round(11 + b.d * 7), fx = b.x + W / 2;
-  if (W > 13) b.o('fan', { x: fx, y: b.y - 7, w: 3, h: 13 });
+  b.seg(6);
+  const W = Math.round(9 + b.d * 7), fx = b.x + W / 2;
+  if (W > 11) b.o('fan', { x: fx, y: b.y - 7, w: 3, h: 13 });
   b.arc('spk', b.x + 1, b.y + 3, b.x + W - 1, b.y + 1.5, 1.6, 7);
   b.x += W; b.seg(9);
 };

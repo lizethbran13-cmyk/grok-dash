@@ -105,7 +105,7 @@ P.step = function (p, inp, dt, ctx) {
     p.vy = h.jump + Math.min(2.2, Math.abs(p.vx) * 0.07); if (grounded && p.slope * p.vx > 0) p.vy += Math.min(4, Math.abs(p.slope * p.vx) * 0.5);
     p.gs = null; p.coyote = 0; p.jbuf = 0; p.jumped = true; p.grind = false; p.crouch = false; p.airDash = h.airDash; p.djump = h.djump; ev(p, 'jump');
   } else if (!grounded && p.jbuf > 0 && p.wallDir) {
-    p.vx = -p.wallDir * 10; p.vy = h.jump * 0.98; p.face = -p.wallDir; p.lockT = 0.16; p.jbuf = 0; p.jumped = true; p.wallDir = 0; p.airDash = h.airDash; p.ballistic = false; ev(p, 'walljump');
+    p.vx = -p.wallDir * 10; p.vy = h.jump * 0.98; p.face = -p.wallDir; p.lockT = 0.22; p.jbuf = 0; p.jumped = true; p.wallDir = 0; p.airDash = h.airDash; p.ballistic = false; ev(p, 'walljump');
   } else if (!grounded && inp.jumpP && p.djump > 0 && p.coyote <= 0) {
     p.djump--; p.vy = h.jump * 0.92; p.jbuf = 0; p.jumped = true; ev(p, 'djump');
   }

@@ -551,30 +551,38 @@ function botInput(i) {
   if (p.mode === 'hook') { const k = p.hook; i.jump = false; if (k.th > 0.25 && k.w > 0) i.jumpP = true; return; }
   if (p.mode === 'bubble') { i.jumpP = true; return; }
   if (R.boss) { botBoss(i); return; }
+  if (!p.gs && B.wd && p.t - B.jt < 0.3) i.lx = B.wd;
   if (p.gs) {
-    const ahead = p.x + 1.2 + Math.max(0, p.vx) * 0.12;
+    B.wd = 0;
+    const ahead = p.x + 0.5 + Math.max(0, p.vx) * 0.02;
     const g = Ph.groundAt(S, ahead, p.y - 3.5, p.y + 0.7);
     const wall = Ph.wallHit(S, p.x + 0.9, p.y, 0.62);
     const foe = R.foes.find((o) => !o.dead && (() => { const fp = foePos(o, R.t); return fp[0] - p.x > 0 && fp[0] - p.x < 3 && Math.abs(fp[1] - p.y) < 2; })());
     if ((!g || wall || foe) && p.t - B.jt > 0.25) { i.jumpP = true; i.jump = true; B.hold = 1; B.jt = p.t; return; }
   }
-  if (!p.gs) { if (p.wallDir && p.t - B.jt > 0.12) { i.jumpP = true; B.jt = p.t; } i.jump = B.hold > 0 || p.vy < 0; if (p.vy < -2 && Ph.groundAt(S, p.x + 0.8, p.y - 2.2, p.y + 0.2)) i.jump = false; }
-  else { i.jump = false; B.hold = 0; }
+  if (!p.gs) { if (p.wallDir && p.vy < 3 && p.t - B.jt > 0.12 && (p.wallDir < 0 || Ph.wallHit(S, p.x + p.wallDir * 0.15, p.y, 2.6))) { i.jumpP = true; B.jt = p.t; B.wd = -p.wallDir; } i.jump = true; if (p.vy <= 0 && p.t - B.jt > 0.4 && (Ph.groundAt(S, p.x + 0.3, p.y - 9, p.y + 0.2) || Ph.groundAt(S, p.x + 1.6, p.y - 9, p.y + 0.2))) i.jump = R.ctx.fans.some((f) => Math.abs(f.x - p.x) < 3); }
+  if (!p.gs && p.vy < 0 && !(B.wd && p.t - B.jt < 0.3)) {
+    const gb = Ph.groundAt(S, p.x, p.y - 4, p.y + 0.2);
+    if (gb && !Ph.groundAt(S, p.x + 2.2 + p.vx * 0.12, p.y - 14, p.y + 0.2) && !Ph.groundAt(S, p.x + 4 + p.vx * 0.3, p.y - 14, p.y + 0.2)) i.lx = p.vx > 3 ? -1 : 0;
+  }
+  else if (p.gs) { i.jump = false; B.hold = 0; }
   if (R.cages.some((o) => !o.broken && Math.abs(o.x - p.x) < 2 && Math.abs(o.y - p.y) < 2)) i.atkP = true;
 }
 function botBoss(i) {
   const p = me, b = R.boss; i.jump = false;
   const d = b.x - p.x;
-  if (b.vuln) { i.lx = Math.sign(d); if (Math.abs(d) < 3.2 && p.gs) { i.jumpP = true; i.jump = true; } if (!p.gs) { i.jump = true; i.lx = Math.abs(d) > 0.4 ? Math.sign(d) : 0; } }
-  else { const away = p.x < 20 ? 1 : -1; i.lx = Math.abs(d) < 8 ? -Math.sign(d) : 0; if (p.x < -3) i.lx = 1; if (p.x > 43) i.lx = -1; for (const h of b.haz) if (h.k === 'wave' && Math.abs(h.x - p.x) < 3 && p.gs) { i.jumpP = true; i.jump = true; } }
-  void away;
+  if (b.vuln) { i.lx = Math.sign(d); if (Math.abs(d) < 2.8) i.atkP = (GS.botS.ak = !GS.botS.ak); if (Math.abs(d) < 3.2 && p.gs && b.y > 1) { i.jumpP = true; i.jump = true; } if (!p.gs) { i.jump = true; i.lx = Math.abs(d) > 0.4 ? Math.sign(d) : 0; } }
+  else { i.lx = Math.abs(d) < 8 ? -Math.sign(d) : 0; if (p.x < -3) i.lx = 1; if (p.x > 43) i.lx = -1; for (const h of b.haz) if (h.k === 'wave' && Math.abs(h.x - p.x) < 3 && p.gs) { i.jumpP = true; i.jump = true; } }
+
 }
+const p_wd = () => me.wallDir;
 window.__gd = {
   G, GS, GD, V, save: () => save, R: () => R, me: () => me, inp,
   start(id, o) { G.loadLevel(id, o); },
   tp(x, y) { if (me) { me.x = x; me.y = y; me.vx = 0; me.vy = 0; me.gs = null; } },
   // run a level headlessly with the autopilot; returns {ok, t, x, deaths}
-  sim(id, maxT, god) {
+  sim(id, maxT, god, tr) {
+    const trace = tr ? [] : null;
     G.loadLevel(id); GS.bot = botInput; GS.botGod = god !== false; GS.botS = null;
     let t = 0, deaths = 0, lastX = me.x, stuckT = 0, maxX = me.x;
     const lives0 = save.lives;
@@ -582,9 +590,10 @@ window.__gd = {
       readInput(); step(DT); t += DT; inp.jumpP = inp.atkP = inp.dashP = false;
       if (me.mode === 'dead') deaths += 0;
       if (me.x > maxX + 0.5) { maxX = me.x; stuckT = 0; } else stuckT += DT;
-      if (stuckT > 25) break;
+      if (trace && Math.round(t / DT) % (tr > 1 ? tr : 30) === 0) trace.push([p_wd(),+t.toFixed(1), +me.x.toFixed(1), +me.y.toFixed(1), +me.vx.toFixed(1), +me.vy.toFixed(1), me.mode, me.gs ? me.gs.k : '-']);
+      if (stuckT > 25 && !R.boss) break;
     }
-    const res = { id, ok: !!R.done, t: +t.toFixed(1), x: +me.x.toFixed(1), y: +me.y.toFixed(1), len: R.L.len, sparks: R.got, sparkTot: R.L.sparks, cages: R.L.cages, lives: save.lives - lives0, mode: me.mode };
+    const res = { id, ok: !!R.done, t: +t.toFixed(1), x: +me.x.toFixed(1), y: +me.y.toFixed(1), len: R.L.len, sparks: R.got, sparkTot: R.L.sparks, cages: R.L.cages, lives: save.lives - lives0, mode: me.mode, trace: trace || undefined };
     GS.bot = null; GS.botGod = false; R.done = true; save.lives = 5;
     return res;
   }
