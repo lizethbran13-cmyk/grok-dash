@@ -45,17 +45,24 @@ MD.boss = function (k) {
     P.eye = mesh(geo.b, toon('#ff3b6b', { emissive: '#7a0020' }), 1.52, 4.45, 0, 0.12, 0.25, 2.0, g); P.eye.scale.y = 0.25;
     P.lights = []; for (let i = 0; i < 8; i++) P.lights.push(mesh(geo.s8, new T.MeshBasicMaterial({ color: ['#ff4fd8', '#3ff0ff', '#ffe14d', '#7df9ff'][i % 4] }), -1.4 + (i % 4) * 0.93, 4.42 - Math.floor(i / 4) * 2.55, 1.25, 0.14, 0.14, 0.14, g));
     [-1, 1].forEach((sd) => { mesh(geo.c, m2, 0, 5.1, sd * 0.6, 0.05, 0.9, 0.05, g); mesh(geo.s8, new T.MeshBasicMaterial({ color: sd > 0 ? '#ff3b6b' : '#3ff0ff' }), 0, 5.6, sd * 0.6, 0.15, 0.15, 0.15, g); });
-    P.arms = [-1, 1].map((sd) => { const a = new T.Group(); a.position.set(0, 3.8, sd * 1.65); g.add(a); outline(mesh(geo.s, m2, 0, 0, 0, 0.75, 0.75, 0.75, a), 0.05); outline(mesh(geo.c, m4, 0.2, -1.1, 0, 0.4, 1.6, 0.4, a), 0.05); outline(mesh(geo.s, m3, 0.3, -2.1, 0, 0.75, 0.7, 0.7, a), 0.05); return a; });
+    P.arms = [-1, 1].map((sd) => { const a = new T.Group(); a.position.set(-0.25, 3.8, sd * 1.95); g.add(a); outline(mesh(geo.s, m2, 0, 0, 0, 0.75, 0.75, 0.75, a), 0.05); outline(mesh(geo.c, m4, 0.2, -1.1, 0, 0.4, 1.6, 0.4, a), 0.05); outline(mesh(geo.s, m3, 0.3, -2.1, 0, 0.75, 0.7, 0.7, a), 0.05); return a; });
     [-1, 1].forEach((sd) => { outline(mesh(geo.c, m4, 0, 1.0, sd * 0.85, 0.45, 1.8, 0.45, g), 0.05); outline(mesh(geo.b, m2, 0.25, 0.2, sd * 0.85, 1.5, 0.45, 0.9, g), 0.04); });
     P.jet = new T.Group(); g.add(P.jet); [-1, 1].forEach((sd) => { const f = mesh(geo.cone, new T.MeshBasicMaterial({ color: '#7df9ff', transparent: true, opacity: 0.75 }), -0.1, -0.6, sd * 0.85, 0.42, 1.3, 0.42, P.jet); f.rotation.x = Math.PI; });
     P.h = 5.2; P.w = 2.6;
   }
   stars3d(P, g);
+  if (k === 6) { const w = new T.Group(); w.add(...g.children); w.scale.setScalar(0.85); g.add(w); }
   return g;
 };
 const baseDims = GD.Boss.dims;
-GD.Boss.dims = (b) => (b.k === 5 ? (b.low ? [1.8, 1.9] : [1.8, 3.2]) : b.k === 6 ? (b.low ? [2.6, 2.4] : [2.6, 5.2]) : baseDims(b));
+GD.Boss.dims = (b) => (b.k === 5 ? (b.low ? [1.8, 1.9] : [1.8, 3.2]) : b.k === 6 ? (b.low ? [2.25, 2.1] : [2.25, 4.45]) : baseDims(b));
 
+const baseView = GD.Boss.View;
+GD.Boss.View = function (k) {
+  const v = baseView(k); if (k !== 5) return v; const P = v.g.userData.P, sync = v.sync; let lx = null;
+  v.sync = function (b, t, dt) { sync.call(v, b, t, dt); if (lx !== null) P.wheels.forEach((w) => { w.rotation.z -= Math.abs(b.x - lx) * 1.8; }); lx = b.x; P.body.rotation.z = b.low ? P.body.rotation.z - dt * 16 : GD.lerp(P.body.rotation.z % TAU, 0, Math.min(1, dt * 8)); P.body.position.y = b.low ? 1.2 : 0; };
+  return v;
+};
 /* ================= boss brains: reuse the tested attack patterns, mixed per phase ================= */
 const B = GD.Boss, baseCreate = B.create, baseUpdate = B.update, basePhase = B.phase;
 B.create = function (k, x, y) { if (k < 5) return baseCreate(k, x, y); const b = baseCreate(0, x, y); b.k = k; b.rk = k; b.hp = b.max = k === 6 ? 8 : 4; b.mk = 0; return b; };
@@ -173,7 +180,7 @@ SS.teaser = function () {
 };
 function titleBits() {
   const col = document.querySelector('#scrTitle .btncol'); if (!col || $('bBossMode')) return;
-  const b = document.createElement('button'); b.id = 'bBossMode'; b.type = 'button'; b.className = 'btn pink'; col.insertBefore(b, col.children[2]);
+  const b = document.createElement('button'); b.id = 'bBossMode'; b.type = 'button'; b.className = 'btn pink small'; col.querySelector('.btnrow.tight').appendChild(b);
   b.onclick = () => { Snd.init(); Snd.fx('click'); if (!G.save().name) { G.save().name = 'Lizeth'; G.persist(); } if (SS.can()) BM.start(); else SS.teaser(); };
   const badge = document.createElement('a'); badge.id = 'ssBadge'; badge.className = 'ssBadge'; badge.target = '_blank'; badge.rel = 'noopener'; col.parentNode.insertBefore(badge, $('arcadeLink'));
   badge.onclick = (e) => { if (SS.owned()) { e.preventDefault(); SS.teaser(); } };
@@ -208,7 +215,7 @@ const baseLevelCard = G.UI.levelCard;
 G.UI.levelCard = function (l) { baseLevelCard(l); if (l.dlc) { const h2 = card().querySelector('h2'); if (h2) h2.insertAdjacentHTML('beforeend', ' <em class="ssTag">DLC</em>'); if (l.mega) { const p = card().querySelector('.sub'); if (p) p.innerHTML = '\uD83E\uDD16 MEGA BOSS! 8 hits and 3 phases. Dodge the flashing warnings, then bop it while it\u2019s dizzy (\u2B50)!'; } } };
 
 /* ================= BOSS MODE: you are GIGA GRUMBOT vs 3 CPU heroes ================= */
-const BM = SS.BM = {};
+const BM = SS.BM = { brave: 0.2 };
 const AX0 = -5.4, AX1 = 45.4, PLATS = [[6, 11, 4.2], [29, 34, 4.2]];
 let S = null;
 function hud(on) {
@@ -232,17 +239,17 @@ BM.start = function (opt) {
   V.build(L, W, {});
   const b = B.create(6, 30, 0); b.st = 'idle'; b.t = 0; b.hp = b.max = 10; b.face = -1;
   S = { L, W, b, view: B.View(6), t: 0, clock: 150, heat: 0, cd: 0, vy: 0, g: true, done: false, act: null, shake: 0, wins: 0,
-    heroes: HEROES.map((h, i) => ({ id: h[0], name: h[2], x: h[1], y: 0, vx: 0, vy: 0, face: 1, g: true, hp: 3, inv: 1.2, ko: false, koT: 0, mesh: V.add(MD.hero(h[0], 0)), think: i * 0.4, tx: h[1], brave: 0, bub: null })) };
+    heroes: HEROES.map((h, i) => ({ id: h[0], name: h[2], x: h[1], y: 0, vx: 0, vy: 0, face: 1, g: true, hp: 4, inv: 1.2, ko: false, dodgeT: 0, koT: 0, mesh: V.add(MD.hero(h[0], 0)), think: i * 0.4, tx: h[1], brave: 0, bub: null })) };
   S.heroes.forEach((h) => { h.bub = V.add(new T.Mesh(geo.s, new T.MeshBasicMaterial({ color: '#bfe8ff', transparent: true, opacity: 0.35, depthWrite: false }))); h.bub.scale.setScalar(1.25); h.bub.visible = false; });
   GS.ui = 'bossmode'; G.showScreens(); hud(true); GS.modeTick = tick; BM.auto = !!opt.auto;
   V.camX = 20; V.camY = 3; V.camTo(20, 3, 0.016, true, 1.15);
-  Snd.music(9); G.banner('BOSS MODE: YOU ARE GIGA GRUMBOT!', 2.2); Snd.fx('warn');
+  Snd.music(9); G.banner('YOU ARE GIGA GRUMBOT!', 2.2); $('bmHelp').style.display = ''; Snd.fx('warn');
   drawHud(true);
 };
 BM.quit = function () { if (!S) return; S = null; GS.modeTick = null; hud(false); GS.ui = 'title'; G.showScreens(); G.menuScene(); Snd.music(6); };
 function haz(o) { o.id = ++S.b.hid; o.warn = o.warn || 0; o.life = o.life == null ? 1 : o.life; S.b.haz.push(o); return o; }
 function nearestHero(dirOnly) { let best = null, bd = 1e9; for (const h of S.heroes) { if (h.ko) continue; const d = h.x - S.b.x; if (dirOnly && Math.sign(d) !== S.b.face && Math.abs(d) > 2) continue; if (Math.abs(d) < bd) { bd = Math.abs(d); best = h; } } return best; }
-function heat(n) { S.heat += n; if (S.heat >= 100) { S.heat = 100; S.b.st = 'stun'; S.b.t = 3.0; S.b.vuln = true; S.act = null; G.banner('OVERHEAT! The heroes can bop you!', 1.6); Snd.fx('no'); } }
+function heat(n) { S.heat += n; if (S.heat >= 100) { S.heat = 100; S.b.st = 'stun'; S.b.t = 3.0; S.b.vuln = true; S.b.low = true; S.act = null; G.banner('OVERHEAT! The heroes can bop you!', 1.6); Snd.fx('no'); } }
 function botBoss(inp) {
   const b = S.b, h = nearestHero(false); inp.lx = 0; inp.jumpP = inp.atkP = inp.dashP = false; if (!h) return;
   const d = h.x - b.x; if (Math.abs(d) > 7) inp.lx = Math.sign(d); else if (Math.abs(d) < 3) inp.lx = -Math.sign(d);
@@ -261,9 +268,9 @@ function step(dt, inp) {
   if (!(b.st === 'stun' || b.st === 'hurt')) S.heat = Math.max(0, S.heat - dt * 16);
   // boss control
   if (b.st === 'dead') { b.t -= dt; b.y = Math.max(0, b.y - dt * 2); }
-  else if (b.st === 'stun' || b.st === 'hurt') { b.t -= dt; if (b.st === 'stun') S.heat = Math.max(0, S.heat - dt * 30); if (b.t <= 0) { b.st = 'idle'; b.vuln = false; } }
+  else if (b.st === 'stun' || b.st === 'hurt') { b.t -= dt; if (b.st === 'stun') S.heat = Math.max(0, S.heat - dt * 30); if (b.t <= 0) { b.st = 'idle'; b.vuln = false; b.low = false; } }
   else if (!S.done) {
-    if (S.act === 'charge') { b.x += b.face * 19 * dt; S.actT -= dt; b.st = 'charge'; if (b.x < AX0 + 2.6 || b.x > AX1 - 2.6) { b.x = clamp(b.x, AX0 + 2.6, AX1 - 2.6); S.act = null; b.st = 'stun'; b.t = 1.3; b.vuln = true; Snd.fx('boom'); S.shake = 0.35; G.banner('BONK!', 0.8); } else if (S.actT <= 0) { S.act = null; b.st = 'idle'; } }
+    if (S.act === 'charge') { b.x += b.face * 19 * dt; S.actT -= dt; b.st = 'charge'; if (b.x < AX0 + 2.6 || b.x > AX1 - 2.6) { b.x = clamp(b.x, AX0 + 2.6, AX1 - 2.6); S.act = null; b.st = 'stun'; b.t = 1.3; b.vuln = true; b.low = true; Snd.fx('boom'); S.shake = 0.35; G.banner('BONK!', 0.8); } else if (S.actT <= 0) { S.act = null; b.st = 'idle'; } }
     else {
       const lx = inp.lx; if (lx) b.face = lx > 0 ? 1 : -1;
       b.x = clamp(b.x + lx * (S.g ? 7.5 : 6) * dt, AX0 + 2.6, AX1 - 2.6); b.st = lx && S.g ? 'walk' : S.g ? 'idle' : 'leap';
@@ -287,17 +294,19 @@ function step(dt, inp) {
     // brain
     const dx = b.x - h.x, warnHere = b.haz.some((z) => z.warn > 0 && (z.k === 'col' || z.k === 'bomb' || z.k === 'mark') && Math.abs(z.x - h.x) < z.w / 2 + 1.2);
     const waveNear = b.haz.some((z) => z.k === 'wave' && z.warn <= 0 && Math.abs(z.x - h.x) < 2.4 && Math.sign(h.x - z.x) === Math.sign(z.vx));
-    if (h.think <= 0) { h.think = 0.35 + Math.random() * 0.4; h.brave = b.vuln ? 1 : Math.random() < 0.06 ? 1 : 0;
-      const side = h.x < b.x ? -1 : 1; h.tx = b.vuln ? b.x : clamp(b.x + side * (6 + Math.random() * 5), AX0 + 1, AX1 - 1); if (Math.abs(h.tx - b.x) < 4 && !b.vuln) h.tx = clamp(b.x - side * 8, AX0 + 1, AX1 - 1); }
+    h.dodgeT -= dt;
+    if (h.think <= 0 && h.dodgeT <= 0) { h.think = 0.35 + Math.random() * 0.4; h.brave = b.vuln ? 1 : Math.random() < BM.brave ? 1 : 0;
+      const side = h.x < b.x ? -1 : 1; h.tx = b.vuln || h.brave ? b.x : clamp(b.x + side * (6 + Math.random() * 5), AX0 + 1, AX1 - 1); if (Math.abs(h.tx - b.x) < 4 && !b.vuln && !h.brave) h.tx = clamp(b.x - side * 8, AX0 + 1, AX1 - 1); }
     let want = Math.sign(h.tx - h.x); if (Math.abs(h.tx - h.x) < 0.6) want = 0;
-    if (warnHere && Math.random() < dt * 9) { const z = b.haz.find((q) => q.warn > 0 && Math.abs(q.x - h.x) < q.w / 2 + 1.2); if (z) { h.tx = clamp(h.x + (h.x < z.x ? -1 : 1) * 4, AX0 + 1, AX1 - 1); want = Math.sign(h.tx - h.x); } }
+    if (warnHere && Math.random() < dt * 9) { const z = b.haz.find((q) => q.warn > 0 && Math.abs(q.x - h.x) < q.w / 2 + 1.2); if (z) { h.tx = clamp(h.x + (h.x < z.x ? -1 : 1) * 4.5, AX0 + 1, AX1 - 1); if (h.tx === AX0 + 1 || h.tx === AX1 - 1) h.tx = clamp(z.x + (h.x < z.x ? 1 : -1) * 4.5, AX0 + 1, AX1 - 1); want = Math.sign(h.tx - h.x); h.dodgeT = 0.7; } }
     const spd = h.id === 'speedy' ? 10 : h.id === 'floaty' ? 7.5 : 8.5;
     h.vx = GD.lerp(h.vx, want * spd, Math.min(1, dt * 6)); if (Math.abs(h.vx) > 0.3) h.face = h.vx > 0 ? 1 : -1;
-    if (h.g && ((waveNear && Math.random() < 0.85) || (b.vuln && Math.abs(dx) < 3.4) || (Math.random() < dt * 0.3))) { h.vy = h.id === 'floaty' ? 15.5 : 14.5; h.g = false; }
+    if (h.g && ((waveNear && Math.random() < 0.85) || ((b.vuln || h.brave) && Math.abs(dx) < 3.4) || (Math.random() < dt * 0.3))) { h.vy = h.id === 'floaty' ? 18.5 : 18; h.g = false; }
     h.vy -= (h.id === 'floaty' && h.vy < 0 ? 22 : 38) * dt; h.x = clamp(h.x + h.vx * dt, AX0, AX1); const py = h.y; h.y += h.vy * dt;
     if (h.y <= 0) { h.y = 0; h.vy = 0; h.g = true; } else { h.g = false; for (const p of PLATS) if (h.vy < 0 && h.x > p[0] && h.x < p[1] && py >= p[2] - 0.05 && h.y <= p[2]) { h.y = p[2]; h.vy = 0; h.g = true; } }
     // bop the boss when it's dizzy
-    if (b.vuln && b.st !== 'hurt' && h.vy < 0 && h.x > bx0 - 0.3 && h.x < bx1 + 0.3 && h.y < by1 + 0.4 && h.y > by1 - 1.2) { h.vy = 14; b.hp--; b.st = 'hurt'; b.t = 0.9; b.vuln = false; Snd.fx('bosshit'); V.burst(b.x, by1, '#ffe14d', 16, 8, 0.8, 0.5); G.banner(h.name.toUpperCase() + ' BOPPED YOU! ' + b.hp + ' HP left', 1.1); if (b.hp <= 0) { b.st = 'dead'; b.t = 2; end(false); } }
+    const canBop = b.vuln || (h.brave && (b.st === 'idle' || b.st === 'walk'));
+    if (canBop && b.st !== 'hurt' && b.st !== 'dead' && h.vy < 0 && h.x > bx0 - 0.3 && h.x < bx1 + 0.3 && h.y < by1 + 0.4 && h.y > by1 - 1.2) { h.vy = 14; b.hp--; b.st = 'hurt'; b.t = 0.9; b.vuln = false; b.low = false; h.brave = 0; Snd.fx('bosshit'); V.burst(b.x, by1, '#ffe14d', 16, 8, 0.8, 0.5); G.banner(h.name.toUpperCase() + ' BOPPED YOU! ' + b.hp + ' HP left', 1.1); if (b.hp <= 0) { b.st = 'dead'; b.t = 2; end(false); } }
     // get hit by your attacks
     if (h.inv <= 0 && !S.done) for (const q of boxes) if (h.x + 0.4 > q[0] && h.x - 0.4 < q[2] && h.y + 1.5 > q[1] && h.y < q[3]) { h.hp--; h.inv = 1.6; h.vx = (h.x < b.x ? -1 : 1) * 9; h.vy = 10; h.g = false; Snd.fx('hurt'); V.burst(h.x, h.y + 1, '#ffffff', 12, 6, 0.6, 0.4);
       if (h.hp <= 0) { h.ko = true; h.koT = 0; Snd.fx('pop'); G.banner(h.name.toUpperCase() + ' IS OUT!', 1.2); if (S.heroes.every((q) => q.ko)) end(true); } break; }
@@ -326,20 +335,23 @@ function render(dt) {
   V.updateFx(dt);
 }
 let hudT = 0;
-function drawHud(force) {
-  if (!S) return; hudT -= 0.016; if (hudT > 0 && !force) return; hudT = 0.1;
+function drawHud(force, dt) {
+  if (!S) return; hudT -= dt || 0.016; if (hudT > 0 && !force) return; hudT = 0.1;
   $('bmHp').style.width = (100 * Math.max(0, S.b.hp) / 10) + '%'; $('bmHeat').style.width = S.heat + '%'; $('bmHeat').parentNode.classList.toggle('hot', S.heat > 70 || S.b.st === 'stun');
   $('bmHeatT').textContent = S.b.st === 'stun' && S.b.vuln ? 'OVERHEATED! cooling\u2026' : 'HEAT ' + Math.round(S.heat) + '%';
+  if (GS.bannerT > 0) { GS.bannerT -= 0.1; if (GS.bannerT <= 0) $('banner').classList.add('hidden'); }
+  if (S.t > 9) $('bmHelp').style.display = 'none';
   $('bmTime').textContent = GD.fmtTime(Math.max(0, S.clock)).replace(/\.\d$/, '');
   $('bmHeroes').innerHTML = S.heroes.map((h) => '<span class="bmH' + (h.ko ? ' ko' : '') + '">' + GD.HEROES[h.id].icon + ' ' + h.name + ' ' + (h.ko ? 'OUT' : '\u2764\uFE0F'.repeat(h.hp)) + '</span>').join('');
 }
 function tick(dt) {
   if (!S) return; const inp = G.inp;
   if (!S.done || S.b.st === 'dead') { const n = Math.ceil(dt / (1 / 120)); for (let i = 0; i < n; i++) { step(dt / n, inp); inp.jumpP = inp.atkP = inp.dashP = false; } }
-  render(dt); drawHud();
+  render(dt); drawHud(false, dt);
 }
 // headless: fast-forward a match with the autopilot (for tests)
 BM.sim = function (sec) { BM.fast = true; BM.start({ auto: true }); const inp = { lx: 0 }; let t = 0; while (t < (sec || 150) && !S.done) { step(1 / 60, inp); t += 1 / 60; } const r = { done: S.done, win: !!S.win, ko: S.heroes.filter((h) => h.ko).length, hp: S.b.hp, t: +t.toFixed(1) }; BM.fast = false; return r; };
+BM.setHeat = (v) => { if (S) S.heat = v; };
 BM.state = () => S && { hp: S.b.hp, heat: S.heat, st: S.b.st, x: S.b.x, done: S.done, win: S.win, heroes: S.heroes.map((h) => ({ id: h.id, hp: h.hp, ko: h.ko, x: +h.x.toFixed(1) })), haz: S.b.haz.length, clock: S.clock };
 
 /* boot */

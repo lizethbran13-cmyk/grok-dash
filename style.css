@@ -166,5 +166,5 @@ body:not(.touch) #joyzone, body:not(.touch) .cbtn { display: none; }
 .bmBar.heat i { background: linear-gradient(90deg,#3ff0ff,#ffb02e); } .bmBar.heat.hot i { background: linear-gradient(90deg,#ff7a1a,#ff2d55); }
 #bmHeroes { display: flex; gap: 5px; flex-wrap: wrap; } .bmH { background: rgba(0,0,0,.45); border-radius: 10px; padding: 3px 7px; font-size: 13px; font-weight: 800; } .bmH.ko { opacity: .45; text-decoration: line-through; }
 #bmQuit { margin-left: auto; }
-#bmHelp { position: absolute; left: 50%; transform: translateX(-50%); top: calc(64px + var(--st)); font-size: 12px; background: rgba(0,0,0,.4); padding: 3px 10px; border-radius: 10px; white-space: nowrap; max-width: 96vw; overflow: hidden; text-overflow: ellipsis; }
+#bmHelp { position: absolute; left: 50%; transform: translateX(-50%); top: calc(78px + var(--st)); font-size: 12px; background: rgba(0,0,0,.4); padding: 3px 10px; border-radius: 10px; white-space: nowrap; max-width: 96vw; overflow: hidden; text-overflow: ellipsis; }
 body.bm #hudL, body.bm #hudR, body.bm #roomPill, body.bm #hint, body.bm #bossBar, body.bm #chaseWarn, body.bm #raceBoard, body.bm #kbdhelp { display: none !important; }
