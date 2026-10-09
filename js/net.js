@@ -91,7 +91,7 @@ N.leave = function (silent) {
 };
 function clean(s) {
   const n = (v) => (typeof v === 'number' && isFinite(v) ? v : 0);
-  return { x: n(s.x), y: n(s.y), vx: n(s.vx), vy: n(s.vy), face: s.face < 0 ? -1 : 1, mode: String(s.mode || 'run').slice(0, 8), g: s.g ? 1 : 0, roll: s.roll ? 1 : 0, glide: s.glide ? 1 : 0, atk: s.atk ? 1 : 0, inv: s.inv ? 1 : 0, ang: n(s.ang), landT: 0, hero: GD.HEROES[s.hero] ? s.hero : 'grok', skin: Math.max(0, Math.min(3, s.skin | 0)), rings: s.rings | 0, fin: n(s.fin) };
+  return { x: n(s.x), y: n(s.y), vx: n(s.vx), vy: n(s.vy), face: s.face < 0 ? -1 : 1, mode: String(s.mode || 'run').slice(0, 8), g: s.g ? 1 : 0, roll: s.roll ? 1 : 0, glide: s.glide ? 1 : 0, atk: s.atk ? 1 : 0, inv: s.inv ? 1 : 0, ang: n(s.ang), landT: 0, hero: GD.HEROES[s.hero] ? s.hero : 'grok', skin: Math.max(0, Math.min(7, s.skin | 0)), rings: s.rings | 0, fin: n(s.fin) };
 }
 // periodic sends
 N.tick = function (dt) {

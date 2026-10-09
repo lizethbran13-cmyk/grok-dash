@@ -59,7 +59,7 @@ V.build = function (L, W, opts) {
     if (!pl && !s.wall) for (let x = s.x0 + 0.7; x < s.x1 - 0.5; x += 1.6 + rnd() * 2.5) {
       const y = GD.Phys.top(s, x), z = -1.0 - rnd() * 1.3;
       if (W.id === 0 || W.id === 4) mg.add(MD.geo.s8, x, y + 0.15, z, 0.18, 0.18, 0.18, rnd() < 0.5 ? '#ff6bd6' : '#ffe14d');
-      mg.add(MD.geo.cone, x + 0.3, y + 0.25, z + 0.3, 0.15, 0.5, 0.15, W.id === 2 ? '#d8f3ff' : W.id === 1 ? '#3ff0ff' : W.id === 3 ? '#8a7a6a' : '#3fae4a');
+      mg.add(MD.geo.cone, x + 0.3, y + 0.25, z + 0.3, 0.15, 0.5, 0.15, W.tuft || (W.id === 2 ? '#d8f3ff' : W.id === 1 ? '#3ff0ff' : W.id === 3 ? '#8a7a6a' : '#3fae4a'));
     }
   }
   // rails
@@ -75,12 +75,13 @@ V.build = function (L, W, opts) {
   decorate(mg, W, rnd, x0, x1, gy, pitY, space, L);
   root.add(mg.build());
   // floor of the pit: water / lava / clouds / neon
-  const pitCol = space ? '#2a0b4a' : ['#38bdf8', '#ff4fd8', '#bfe8ff', '#ff5a1a', '#ffffff'][W.id];
+  const pitCol = space ? '#2a0b4a' : W.pit || ['#38bdf8', '#ff4fd8', '#bfe8ff', '#ff5a1a', '#ffffff'][W.id];
   const pit = new T.Mesh(new T.PlaneGeometry(x1 - x0 + 200, 120), new T.MeshBasicMaterial({ color: pitCol, transparent: true, opacity: W.id === 4 ? 0.9 : 0.75, fog: true }));
   pit.rotation.x = -Math.PI / 2; pit.position.set((x0 + x1) / 2, pitY + 4.5, -40); root.add(pit);
   V.pit = pit;
 };
 function decorate(mg, W, rnd, x0, x1, gy, pitY, space, L) {
+  if (!space && V.deco && V.deco[W.bg]) { V.deco[W.bg](mg, W, rnd, x0, x1, gy, pitY, L); return; }
   const base = Math.min(0, pitY + 8);
   // far layer z=-60..-80
   for (let x = x0; x < x1; x += 14 + rnd() * 10) {

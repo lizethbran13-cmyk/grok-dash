@@ -208,7 +208,7 @@ const FLAVOR = [
 const CHASE_OK = { run: 1, gaps: 1, hills: 1, speed: 1, spring: 1, foes: 1, spikes: 1, rail: 1, stairs: 1 };
 
 function buildNormal(def) {
-  const b = B(def), fl = FLAVOR[def.w];
+  const b = B(def), fl = FLAVOR[def.w] || def.flavor || {};
   b.gnd(-30, 0, 0, 0); b.S.push({ x0: -32, x1: -30, y0: 30, y1: 30, yb: -40, k: 'g', wall: true });
   b.seg(12);
   const nChunks = 7 + def.w + def.i;

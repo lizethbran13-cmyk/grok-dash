@@ -138,3 +138,33 @@ body:not(.touch) #joyzone, body:not(.touch) .cbtn { display: none; }
   .title .btncol { width: min(560px,100%); display: grid; grid-template-columns: 1fr 1fr; }
   .title .btncol .toggle, .title .btncol .btnrow { grid-column: span 2; }
 }
+/* ===== Super Sonic Pack DLC ===== */
+.ssTag { font-style: normal; font-size: 11px; background: linear-gradient(90deg,#ffd700,#ff4fd8); color: #1a0d2a; border-radius: 8px; padding: 1px 6px; vertical-align: middle; font-weight: 900; }
+.ssTeaser h2 { margin: 2px 0 8px; }
+.ssList { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; text-align: left; }
+.ssList div { background: linear-gradient(135deg,#2a1660,#5b2bb5); color: #fff; border-radius: 14px; padding: 6px 9px; border: 2px solid #ffd700; }
+.ssList b { display: block; font-size: 13px; } .ssList small { font-size: 11px; opacity: .9; }
+.ssList div:last-child { grid-column: 1 / -1; }
+.ssSw { display: inline-block; width: 18px; height: 18px; border-radius: 50%; border: 3px solid; margin: 2px 1px 0; vertical-align: middle; }
+.ssSw.super { box-shadow: 0 0 8px #ffe14d; } .ssSw.metal { box-shadow: inset -4px -4px 0 rgba(0,0,0,.25); }
+.ssLock { margin: 10px 0 2px; font-weight: 900; font-size: 17px; color: #7c3aed; }
+.ssOk { margin: 10px 0 4px; font-weight: 900; color: #16a34a; }
+.ssBadge { display: block; margin: 8px auto 0; padding: 7px 12px; border-radius: 999px; background: linear-gradient(90deg,#1e1450,#7c3aed); color: #ffe14d; font-weight: 900; font-size: 13px; text-decoration: none; text-align: center; max-width: 300px; box-shadow: 0 0 14px #a78bfa88; }
+.ssBadge.own { background: linear-gradient(90deg,#ff8a1a,#ff4fd8); color: #fff; }
+#bBossMode.ssLocked { filter: saturate(.6); }
+.wtab.dlc { border-color: #ffd700; background: linear-gradient(180deg,#fff7d6,#ffe0f4); }
+.wtab.dlcLock { opacity: .8; }
+.wtab.dlc small { font-weight: 900; color: #7c3aed; }
+#bmHud { position: fixed; inset: 0; z-index: 11; pointer-events: none; color: #fff; text-shadow: 0 2px 0 #000; }
+#bmHud.hidden { display: none; }
+#bmHud button { pointer-events: auto; }
+.bmTop { position: absolute; top: calc(6px + var(--st)); left: calc(8px + var(--sl)); right: calc(8px + var(--sr)); display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
+.bmMe { background: rgba(30,20,80,.7); border: 3px solid #ffd700; border-radius: 14px; padding: 4px 8px; min-width: 170px; }
+.bmMe b { font-size: 13px; } .bmMe small { font-size: 11px; display: block; }
+.bmBar { height: 12px; border-radius: 6px; border: 2px solid #fff; background: rgba(0,0,0,.5); overflow: hidden; margin-top: 3px; }
+.bmBar i { display: block; height: 100%; background: linear-gradient(90deg,#22c55e,#a3e635); transition: width .2s; }
+.bmBar.heat i { background: linear-gradient(90deg,#3ff0ff,#ffb02e); } .bmBar.heat.hot i { background: linear-gradient(90deg,#ff7a1a,#ff2d55); }
+#bmHeroes { display: flex; gap: 5px; flex-wrap: wrap; } .bmH { background: rgba(0,0,0,.45); border-radius: 10px; padding: 3px 7px; font-size: 13px; font-weight: 800; } .bmH.ko { opacity: .45; text-decoration: line-through; }
+#bmQuit { margin-left: auto; }
+#bmHelp { position: absolute; left: 50%; transform: translateX(-50%); top: calc(64px + var(--st)); font-size: 12px; background: rgba(0,0,0,.4); padding: 3px 10px; border-radius: 10px; white-space: nowrap; max-width: 96vw; overflow: hidden; text-overflow: ellipsis; }
+body.bm #hudL, body.bm #hudR, body.bm #roomPill, body.bm #hint, body.bm #bossBar, body.bm #chaseWarn, body.bm #raceBoard, body.bm #kbdhelp { display: none !important; }

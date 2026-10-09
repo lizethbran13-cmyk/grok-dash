@@ -75,8 +75,9 @@ G.R = () => R; G.me = () => me;
 G.loadLevel = function (id, o) {
   o = o || {};
   const def = GD.lvById(id); if (!def) return;
+  if (def.dlc && GD.SS && !GD.SS.canLoad()) { GD.SS.teaser(); return; }
   const L = GD.buildLevel(def), W = GD.WORLDS[def.w];
-  V.build(L, W, { space: id === '5-B' });
+  V.build(L, W, { space: id === '5-B' || !!W.space });
   R = GS.R = { id, def, L, W, t: 0, clock: 0, race: !!o.race, done: false, fin: false, ctx: { S: L.S.slice(), springs: [], boosts: [], loops: [], qpipes: [], cannons: [], hooks: [], fans: [] },
     rings: [], sparks: [], cages: [], cps: [], foes: [], haz: [], hints: [], fakes: [], movers: [], crumbles: [], goal: null, chaseO: null, chase: null, boss: null, bossV: null, scat: [], got: 0, cageGot: [0, 0, 0], cpN: 0, byId: {}, gotRings: 0, bonus: def.kind === 'bonus' };
   const add = (m) => V.add(m);
@@ -117,7 +118,7 @@ G.loadLevel = function (id, o) {
   if (!ringPool.length || !ringPool[0].parent) { ringPool.length = 0; }
   for (let i = 0; i < 24; i++) { const m = new T.Mesh(MD.ringGeo, MD.ringMat); m.visible = false; V.add(m); ringPool[i] = m; }
   // chase wall
-  if (R.chaseO) { const g = new T.Group(); const col = ['#7a5a3a', '#ff4fd8', '#ffffff', '#ff5a1a', '#6b7280'][def.w]; const m = MD.outline(MD.mesh(MD.geo.s, MD.toon(col, { emissive: def.w === 3 ? '#7a2000' : def.w === 1 ? '#5a0a4a' : '#000000' }), 0, 0, 0, 6, 6, 5), 0.03); g.add(m); const wall = MD.mesh(MD.geo.b, MD.toon(col), -8, 0, 0, 16, 60, 6); g.add(wall); g.userData.ball = m; g.visible = false; add(g); R.chaseM = g; }
+  if (R.chaseO) { const g = new T.Group(); const col = W.chaseCol || ['#7a5a3a', '#ff4fd8', '#ffffff', '#ff5a1a', '#6b7280'][def.w]; const m = MD.outline(MD.mesh(MD.geo.s, MD.toon(col, { emissive: def.w === 3 ? '#7a2000' : def.w === 1 ? '#5a0a4a' : '#000000' }), 0, 0, 0, 6, 6, 5), 0.03); g.add(m); const wall = MD.mesh(MD.geo.b, MD.toon(col), -8, 0, 0, 16, 60, 6); g.add(wall); g.userData.ball = m; g.visible = false; add(g); R.chaseM = g; }
   // player
   me = GS.me = Ph.newPlayer(save.hero, L.start[0], L.start[1]);
   me.rings = 0; me.shield = save.assist ? 1 : 0; me.cp = { x: L.start[0], y: L.start[1] }; me.safe = { x: L.start[0], y: L.start[1] }; me.finT = 0;
@@ -525,6 +526,7 @@ function frame(now) {
     render(dt); updateTags();
     if ((GS.hudT = (GS.hudT || 0) + dt) > 0.1) { GS.hudT = 0; updateHud(); }
   } else if (GS.ui === 'game' && R) { render(0); }
+  else if (GS.modeTick) { readInput(); GS.modeTick(dt); }
   else { if (GS.net) GS.net.tick(dt); renderMenu(dt); }
   V.render();
 }

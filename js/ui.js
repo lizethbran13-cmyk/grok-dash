@@ -70,8 +70,8 @@ UI.unlocks = function () {
 UI.map = function () {
   const s = save();
   if (GS.mapW == null) { GS.mapW = 0; for (let w = 4; w >= 0; w--) if (GD.worldOpen(s, w)) { GS.mapW = w; break; } }
-  $('worldTabs').innerHTML = GD.WORLDS.map((w, i) => { const open = GD.worldOpen(s, i); return '<button type="button" class="wtab' + (i === GS.mapW ? ' on' : '') + (open ? '' : ' lock') + '" data-w="' + i + '">' + (open ? w.icon : '\uD83D\uDD12') + '<small>World ' + (i + 1) + '</small></button>'; }).join('');
-  $('worldTabs').onclick = (e) => { const b = e.target.closest('[data-w]'); if (!b) return; const w = +b.dataset.w; if (!GD.worldOpen(s, w)) { G.toast('\uD83D\uDD12 Beat the World ' + w + ' boss to open this world!', true); Snd.fx('no'); return; } GS.mapW = w; Snd.fx('click'); UI.map(); };
+  $('worldTabs').innerHTML = GD.WORLDS.map((w, i) => { const open = GD.worldOpen(s, i), dl = w.dlc && !(GD.SS && GD.SS.can()); return '<button type="button" class="wtab' + (i === GS.mapW ? ' on' : '') + (open ? '' : ' lock') + (w.dlc ? ' dlc' : '') + (dl ? ' dlcLock' : '') + '" data-w="' + i + '">' + (open ? w.icon : '\uD83D\uDD12') + '<small>' + (w.dlc ? 'DLC W' + (i + 1) : 'World ' + (i + 1)) + '</small></button>'; }).join('');
+  $('worldTabs').onclick = (e) => { const b = e.target.closest('[data-w]'); if (!b) return; const w = +b.dataset.w; if (GD.WORLDS[w].dlc && !(GD.SS && GD.SS.can())) { Snd.fx('click'); GD.SS.teaser(); return; } if (!GD.worldOpen(s, w)) { G.toast('\uD83D\uDD12 Beat the World ' + w + ' boss to open this world!', true); Snd.fx('no'); return; } GS.mapW = w; Snd.fx('click'); UI.map(); };
   const W = GD.WORLDS[GS.mapW];
   const lvs = GD.LEVELS.filter((l) => l.w === GS.mapW);
   let h = '<div class="wname">' + W.icon + ' ' + esc(W.name) + ' <small>(\uD83D\uDC39 ' + GD.worldCrit(s, GS.mapW) + '/12)</small></div><div id="nodes">';
